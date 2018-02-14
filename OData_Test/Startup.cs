@@ -1,5 +1,7 @@
 ﻿using System;
-using Microsoft.AspNet.OData.Builder;
+using System.Collections.Generic;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,9 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Edm;
-using OData_Test.Controllers.OData;
 using OData_Test.Data;
+using OData_Test.Infrastructure;
 using OData_Test.Models;
 using OData_Test.Services;
 
@@ -24,8 +25,10 @@ namespace OData_Test
 
         public IConfiguration Configuration { get; }
 
+        public IServiceProvider ServiceProvider { get; private set; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -40,6 +43,9 @@ namespace OData_Test
             services.AddOData();
 
             services.AddMvc();
+
+            ServiceProvider = InitializeContainer(services);
+            return ServiceProvider;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,11 +66,16 @@ namespace OData_Test
 
             app.UseAuthentication();
 
-            var edmModel = GetEdmModel(app.ApplicationServices);
-
             app.UseMvc(routes =>
             {
-                routes.MapODataServiceRoute("OData", "odata", edmModel);
+                // Enable all OData functions
+                routes.Select().Expand().Filter().OrderBy().MaxTop(null).Count();
+
+                var registrars = ServiceProvider.GetRequiredService<IEnumerable<IODataRegistrar>>();
+                foreach (var registrar in registrars)
+                {
+                    registrar.Register(routes, app.ApplicationServices);
+                }
 
                 routes.MapRoute(
                     name: "default",
@@ -72,13 +83,23 @@ namespace OData_Test
             });
         }
 
-        private static IEdmModel GetEdmModel(IServiceProvider serviceProvider)
+        private static IServiceProvider InitializeContainer(IServiceCollection services)
         {
-            var builder = new ODataConventionModelBuilder(serviceProvider);
+            var builder = new ContainerBuilder();
+            builder.Populate(services);
 
-            builder.EntitySet<PublicUserInfo>("PublicUserApi");
+            builder.RegisterType<ApplicationDbContextFactory>().As<IDbContextFactory>().SingleInstance();
 
-            return builder.GetEdmModel();
+            builder.RegisterGeneric(typeof(EntityFrameworkRepository<>))
+                .As(typeof(IRepository<>))
+                .InstancePerLifetimeScope();
+
+            builder.RegisterType<PageTypeService>().As<IPageTypeService>().InstancePerDependency();
+
+            builder.RegisterType<ODataRegistrar>().As<IODataRegistrar>().SingleInstance();
+
+            var container = builder.Build();
+            return new AutofacServiceProvider(container);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.OData;
@@ -11,7 +12,7 @@ using OData_Test.Services;
 
 namespace OData_Test.Controllers.OData
 {
-    public abstract class GenericODataController<TEntity, TKey> : ODataController
+    public abstract class GenericODataController<TEntity, TKey> : ODataController, IDisposable
         where TEntity : class
     {
         #region Non-Public Properties
@@ -19,6 +20,8 @@ namespace OData_Test.Controllers.OData
         protected IGenericDataService<TEntity> Service { get; private set; }
 
         //protected ILogger Logger { get; private set; }
+
+        private IRepositoryConnection<TEntity> disposableConnection = null;
 
         #endregion Non-Public Properties
 
@@ -41,9 +44,10 @@ namespace OData_Test.Controllers.OData
         #endregion Constructors
 
         #region Public Methods
-
+        
+        // NOTE: Change due to: https://github.com/OData/WebApi/issues/1235
         // GET: odata/<Entity>
-        //[EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
         public virtual async Task<IEnumerable<TEntity>> Get(ODataQueryOptions<TEntity> options)
         {
             options.Validate(new ODataValidationSettings()
@@ -51,13 +55,11 @@ namespace OData_Test.Controllers.OData
                 AllowedQueryOptions = AllowedQueryOptions.All
             });
 
-            using (var connection = Service.OpenConnection())
-            {
-                var query = connection.Query();
-                query = ApplyMandatoryFilter(query);
-                var results = options.ApplyTo(query);
-                return await (results as IQueryable<TEntity>).ToHashSetAsync();
-            }
+            var connection = GetDisposableConnection();
+            var query = connection.Query();
+            query = ApplyMandatoryFilter(query);
+            var results = options.ApplyTo(query);
+            return await (results as IQueryable<TEntity>).ToHashSetAsync();
         }
 
         // GET: odata/<Entity>(5)
@@ -253,6 +255,57 @@ namespace OData_Test.Controllers.OData
         {
         }
 
+        private IRepositoryConnection<TEntity> GetDisposableConnection()
+        {
+            if (disposableConnection == null)
+            {
+                disposableConnection = Service.OpenConnection();
+            }
+            return disposableConnection;
+        }
+
         #endregion Non-Public Methods
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                    if (disposableConnection != null)
+                    {
+                        disposableConnection.Dispose();
+                        disposableConnection = null;
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~GenericODataController() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable Support
     }
 }

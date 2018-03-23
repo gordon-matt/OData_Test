@@ -95,6 +95,7 @@ namespace OData_Test
                 .InstancePerLifetimeScope();
 
             builder.RegisterType<PageTypeService>().As<IPageTypeService>().InstancePerDependency();
+            builder.RegisterType<RegionService>().As<IRegionService>().InstancePerDependency();
 
             builder.RegisterType<ODataRegistrar>().As<IODataRegistrar>().SingleInstance();
 

@@ -20,6 +20,7 @@ namespace OData_Test.Data
             // Add your customizations after calling base.OnModelCreating(builder);
 
             builder.ApplyConfiguration(new PageTypeMap());
+            builder.ApplyConfiguration(new RegionMap());
         }
     }
 }

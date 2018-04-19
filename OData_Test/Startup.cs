@@ -94,6 +94,8 @@ namespace OData_Test
                 .As(typeof(IRepository<>))
                 .InstancePerLifetimeScope();
 
+            builder.RegisterType<MessageTemplateService>().As<IMessageTemplateService>().InstancePerDependency();
+            builder.RegisterType<MessageTemplateVersionService>().As<IMessageTemplateVersionService>().InstancePerDependency();
             builder.RegisterType<PageTypeService>().As<IPageTypeService>().InstancePerDependency();
             builder.RegisterType<RegionService>().As<IRegionService>().InstancePerDependency();
 

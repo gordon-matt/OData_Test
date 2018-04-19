@@ -44,10 +44,10 @@ namespace OData_Test.Controllers.OData
         #endregion Constructors
 
         #region Public Methods
-        
+
         // NOTE: Change due to: https://github.com/OData/WebApi/issues/1235
         // GET: odata/<Entity>
-        [EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
+        //[EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
         public virtual async Task<IEnumerable<TEntity>> Get(ODataQueryOptions<TEntity> options)
         {
             options.Validate(new ODataValidationSettings()
@@ -59,7 +59,7 @@ namespace OData_Test.Controllers.OData
             var query = connection.Query();
             query = ApplyMandatoryFilter(query);
             var results = options.ApplyTo(query);
-            return await (results as IQueryable<TEntity>).ToHashSetAsync();
+            return (results as IQueryable<TEntity>).ToHashSet();
         }
 
         // GET: odata/<Entity>(5)

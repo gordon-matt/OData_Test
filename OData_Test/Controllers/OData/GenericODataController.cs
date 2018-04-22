@@ -7,7 +7,6 @@ using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OData_Test.Data;
-using OData_Test.Extensions;
 using OData_Test.Services;
 
 namespace OData_Test.Controllers.OData
@@ -78,7 +77,7 @@ namespace OData_Test.Controllers.OData
         }
 
         // PUT: odata/<Entity>(5)
-        public virtual async Task<IActionResult> Put([FromODataUri] TKey key, TEntity entity)
+        public virtual async Task<IActionResult> Put([FromODataUri] TKey key, [FromBody] TEntity entity)
         {
             if (!CanModifyEntity(entity))
             {
@@ -116,7 +115,7 @@ namespace OData_Test.Controllers.OData
         }
 
         // POST: odata/<Entity>
-        public virtual async Task<IActionResult> Post(TEntity entity)
+        public virtual async Task<IActionResult> Post([FromBody] TEntity entity)
         {
             if (!CanModifyEntity(entity))
             {

@@ -47,7 +47,7 @@ namespace OData_Test.Controllers.OData
         // NOTE: Change due to: https://github.com/OData/WebApi/issues/1235
         // GET: odata/<Entity>
         //[EnableQuery(AllowedQueryOptions = AllowedQueryOptions.All)]
-        public virtual async Task<IEnumerable<TEntity>> Get(ODataQueryOptions<TEntity> options)
+        public virtual async Task<IActionResult> Get(ODataQueryOptions<TEntity> options)
         {
             options.Validate(new ODataValidationSettings()
             {
@@ -58,7 +58,8 @@ namespace OData_Test.Controllers.OData
             var query = connection.Query();
             query = ApplyMandatoryFilter(query);
             var results = options.ApplyTo(query);
-            return (results as IQueryable<TEntity>).ToHashSet();
+            return Ok((results as IQueryable<TEntity>).ToHashSet()); // 2018.06.15: Fix issue https://github.com/OData/WebApi/issues/1447
+            //return (results as IQueryable<TEntity>).ToHashSet();
         }
 
         // GET: odata/<Entity>(5)

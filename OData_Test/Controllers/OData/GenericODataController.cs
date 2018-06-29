@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.OData;
@@ -67,7 +66,7 @@ namespace OData_Test.Controllers.OData
         public virtual async Task<IActionResult> Get([FromODataUri] TKey key)
         {
             var entity = await Service.FindOneAsync(key);
-            
+
             if (!CanViewEntity(entity))
             {
                 return NotFound();

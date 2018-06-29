@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OData_Test.Models;
 using OData_Test.Models.AccountViewModels;
 using OData_Test.Services;
@@ -430,7 +426,6 @@ namespace OData_Test.Controllers
             return View();
         }
 
-
         [HttpGet]
         public IActionResult AccessDenied()
         {
@@ -459,6 +454,6 @@ namespace OData_Test.Controllers
             }
         }
 
-        #endregion
+        #endregion Helpers
     }
 }

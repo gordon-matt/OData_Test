@@ -1,5 +1,3 @@
-using System;
-
 namespace OData_Test.Models
 {
     public class ErrorViewModel

@@ -17,17 +17,7 @@ namespace OData_Test.Infrastructure
         {
             ODataModelBuilder builder = new ODataConventionModelBuilder(services);
 
-            builder.EntitySet<MessageTemplate>("MessageTemplateApi");
-            builder.EntitySet<MessageTemplateVersion>("MessageTemplateVersionApi");
-            builder.EntitySet<PageType>("PageTypeApi");
-            builder.EntitySet<PageType>("PageTypeApi");
-            builder.EntitySet<Region>("RegionApi");
-            //builder.EntitySet<PublicUserInfo>("PublicUserApi");
-
-            var getCurrentVersionFunction = builder.EntityType<MessageTemplateVersion>().Collection.Function("GetCurrentVersion");
-            getCurrentVersionFunction.Parameter<int>("templateId");
-            getCurrentVersionFunction.Parameter<string>("cultureCode");
-            getCurrentVersionFunction.ReturnsFromEntitySet<MessageTemplateVersion>("MessageTemplateVersionApi");
+            builder.EntitySet<Person>("PersonApi");
 
             routes.MapODataServiceRoute("OData", "odata", builder.GetEdmModel());
         }

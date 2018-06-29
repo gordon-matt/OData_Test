@@ -64,17 +64,16 @@ namespace OData_Test.Controllers.OData
 
         // GET: odata/<Entity>(5)
         [EnableQuery]
-        public virtual async Task<SingleResult<TEntity>> Get([FromODataUri] TKey key)
+        public virtual async Task<IActionResult> Get([FromODataUri] TKey key)
         {
             var entity = await Service.FindOneAsync(key);
-
-            // TODO: CheckPermission(ReadPermission) is getting done twice.. once above, and once in CanViewEntity(). Unnecessary... see if this can be modified
+            
             if (!CanViewEntity(entity))
             {
-                return SingleResult.Create(Enumerable.Empty<TEntity>().AsQueryable());
+                return NotFound();
             }
 
-            return SingleResult.Create(new[] { entity }.AsQueryable());
+            return Ok(entity);
         }
 
         // PUT: odata/<Entity>(5)
